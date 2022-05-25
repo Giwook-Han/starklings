@@ -14,6 +14,13 @@ end
 # Create two storages `star` and `slot`
 # `slot` will map an `address` to the next available `slot` this `address` can use
 # `star` will map an `address` and a `slot` to a `size`
+@storage_var
+func slot(address : felt) -> (slot : felt):
+end
+
+@storage_var
+func star(address : felt, slot : felt) -> (size : felt):
+end
 
 # TODO
 # Create an event `a_star_is_born`
@@ -43,10 +50,16 @@ func light_star{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
 ):
     # TODO
     # Get the caller address
+    let (sender_address) = get_caller_address()
     # Get the amount on dust owned by the caller
+    let (res) = dust.read(sender_address)
     # Make sure this amount is at least equal to `dust_amount`
+    assert_le(dust_amount,res)
     # Get the caller next available `slot`
+    let (sender_slot) = slot.read(sender_address)
+    slot.wirte(sender_address,sender_slot + 1)
     # Update the amount of dust owned by the caller
+    star.wirte(sender_address,sender_slot,res - dust_amount)
     # Register the newly created star, with a size equal to `dust_amount`
     # Increment the caller next available slot
     # Emit an `a_star_is_born` even with appropiate valued
