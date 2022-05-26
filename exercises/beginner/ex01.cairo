@@ -4,8 +4,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math import assert_le
 
-# I AM NOT DONE
-
 @storage_var
 func dust(address : felt) -> (amount : felt):
 end
@@ -29,6 +27,9 @@ end
 # - the `slot` where this `star` has been registered
 # - the size of the given `star`
 # https://starknet.io/docs/hello_starknet/events.html
+@event
+func a_star_is_born(account : felt, slot : felt, size_star : felt):
+end
 
 @external
 func collect_dust{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(amount : felt):
@@ -56,14 +57,15 @@ func light_star{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     # Make sure this amount is at least equal to `dust_amount`
     assert_le(dust_amount,res)
     # Get the caller next available `slot`
-    let (sender_slot) = slot.read(sender_address)
-    slot.wirte(sender_address,sender_slot + 1)
+    let (available_slot) = slot.read(sender_address)
     # Update the amount of dust owned by the caller
-    star.wirte(sender_address,sender_slot,res - dust_amount)
+    dust.write(sender_address, res - dust_amount)
     # Register the newly created star, with a size equal to `dust_amount`
+    star.write(sender_address, available_slot, dust_amount)
     # Increment the caller next available slot
+    slot.write(sender_address,available_slot + 1)
     # Emit an `a_star_is_born` even with appropiate valued
-
+    a_star_is_born.emit(sender_address, available_slot,dust_amount)
     return ()
 end
 
@@ -72,6 +74,22 @@ func view_dust{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     address : felt
 ) -> (amount : felt):
     let (res) = dust.read(address)
+    return (res)
+end
+
+@view
+func view_slot{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    address : felt
+) -> (amount : felt):
+    let (res) = slot.read(address)
+    return (res)
+end
+
+@view
+func view_star{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    address : felt, slot : felt
+) -> (amount : felt):
+    let (res) = star.read(address,slot)
     return (res)
 end
 
