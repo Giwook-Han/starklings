@@ -2,10 +2,24 @@ from argparse import ArgumentParser
 import asyncio
 import os
 from pathlib import Path
+from rich.traceback import install
 from src import cli
+from src.config import current_working_directory
+
+install(show_locals=True)
+
+
+def is_valid_file(parser, arg):
+    file_path = Path(arg).resolve()
+    if not file_path.exists():
+        file_path = current_working_directory / arg
+    if not file_path.exists():
+        return parser.error(f"The file {arg} does not exist!")
+    return file_path
 
 
 script_root = Path(os.getcwd())
+
 root_parser = ArgumentParser()
 
 root_parser.add_argument(
@@ -19,36 +33,30 @@ root_parser.add_argument(
 root_parser.add_argument(
     "--verify",
     "-v",
-    default=False,
-    help="Verifies all exercises according to the recommended order",
-    action="store_true",
+    metavar="relative_path_to_exercise",
+    help="Verify a single exercise",
+    type=lambda x: is_valid_file(root_parser, x),
 )
+
 
 root_parser.add_argument(
     "--watch",
     "-w",
     default=False,
-    help="Reruns `verify` when files were edited",
+    help="Watch edited files and verify them",
     action="store_true",
 )
-
-
-def is_valid_file(parser, arg):
-    if not os.path.exists(arg):
-        parser.error(f"The file {arg} does not exist!")
-    else:
-        return Path(arg)
-
 
 root_parser.add_argument(
     "-s",
     "--solution",
-    help="path to an exercise file",
+    metavar="relative_path_to_exercise",
+    help="Provide a solution for an exercise",
     type=lambda x: is_valid_file(root_parser, x),
 )
 
 try:
-    asyncio.run(cli(root_parser.parse_args(), script_root))
+    asyncio.run(cli(root_parser.parse_args()))
 except Exception as error:
     print(
         "Unexpected Starklings error. Report it here:\n"

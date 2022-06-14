@@ -11,13 +11,13 @@
 
 from starkware.cairo.common.alloc import alloc
 
-func square(array : felt*, array_len : felt):
+func square(array : felt*, array_len : felt) -> (array : felt*):
+    alloc_locals
     if array_len == 0:
         return ()
     end
 
     let squared_item = array[0] * array[0]
-    assert [array] = squared_item
 
     return square(array + 1, array_len - 1)
 end
