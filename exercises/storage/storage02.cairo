@@ -2,8 +2,6 @@
 
 # Starknet storage can be though about as a hashmap
 
-# I AM NOT DONE
-
 struct Id:
     member age : felt
     member height : felt
@@ -12,8 +10,17 @@ end
 
 # TODO
 # Create a storage named wallet, mapping a felt to another
+@storage_var
+func wallet(address : felt) -> (value : felt):
+end
 # Create a storage named height_map, mapping two felts to another
+@storage_var
+func height_map(x : felt, y : felt) -> (z : felt):
+end
 # Create a storage named id, mapping a felt to an Id
+@storage_var
+func id(address : felt) -> (value : Id):
+end
 
 # TESTS #
 

@@ -1,7 +1,5 @@
 %lang starknet
 
-# I AM NOT DONE
-
 # Cairo memory is immutable.
 # Once a memory cell has been assigned, its value CANNOT be changed.
 # The program will crash if someone tries to assign a new, different, value to an already initialized memory cell.
@@ -11,19 +9,19 @@
 # TODO
 # Rewrite this function in a high level syntax, using tempvar and assert
 func crash():
-    # [ap] = 42; ap++
-    # [ap - 1] = 42
-    # [ap - 1] = 21
+    tempvar x = 42
+    assert x = 42
+    assert x = 21
 
-    ret
+    return ()
 end
 
 # TODO
 # Rewrite this funtion in a low level syntax
 func assert_42(number : felt):
-    # assert number = 42
+    [ap - 3] =42
 
-    return ()
+    ret
 end
 
 # TODO
@@ -32,6 +30,7 @@ end
 # else, if the value is initialized and different from 42, crash
 # else, do nothing and return
 func assert_pointer_42(p_number : felt*):
+    assert [p_number] = 42
     return ()
 end
 
@@ -40,7 +39,8 @@ end
 # if the memory cell pointed by `p_number` is set to 42, do nothing and return
 # else crash
 func assert_pointer_42_no_set(p_number : felt*):
-    return ()
+    assert [p_number] - 42 = 0
+    return()
 end
 
 #########
